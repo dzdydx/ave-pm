@@ -1,0 +1,36 @@
+# training args
+seed: 123
+lr: 0.001
+snapshot_pref: "./TestExps/CPSP/train/"
+batch_size: 64
+test_batch_size: 64
+n_epoch: 45
+gpu: "0"
+evaluate: False
+resume: ""    # path to latest checkpoint
+
+# dataset args
+dataset_name: dy
+category_num: 86
+data_root: "../dataset/feature/"
+meta_root: "../dataset/csvfiles/"
+vis_fea_type: "vgg"
+
+# model args
+model: "cpsp"
+threshold_value: 0.099
+
+# logs args
+print_freq: 200
+eval_freq: 1
+
+# 控制梯度的
+clip_gradient: 0.1
+
+# losses args
+avps_flag: True
+lambda_avps: 100
+vcon_flag: True
+lambda_vcon: 1
+scon_flag: True
+lambda_scon: 0.01

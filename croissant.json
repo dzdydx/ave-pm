@@ -1,0 +1,349 @@
+{
+  "@context": {
+    "@language": "en",
+    "@vocab": "https://schema.org/",
+    "citeAs": "cr:citeAs",
+    "column": "cr:column",
+    "conformsTo": "dct:conformsTo",
+    "cr": "http://mlcommons.org/croissant/",
+    "rai": "http://mlcommons.org/croissant/RAI/",
+    "data": {
+      "@id": "cr:data",
+      "@type": "@json"
+    },
+    "dataType": {
+      "@id": "cr:dataType",
+      "@type": "@vocab"
+    },
+    "dct": "http://purl.org/dc/terms/",
+    "examples": {
+      "@id": "cr:examples",
+      "@type": "@json"
+    },
+    "extract": "cr:extract",
+    "field": "cr:field",
+    "fileProperty": "cr:fileProperty",
+    "fileObject": "cr:fileObject",
+    "fileSet": "cr:fileSet",
+    "format": "cr:format",
+    "includes": "cr:includes",
+    "isLiveDataset": "cr:isLiveDataset",
+    "jsonPath": "cr:jsonPath",
+    "key": "cr:key",
+    "md5": "cr:md5",
+    "parentField": "cr:parentField",
+    "path": "cr:path",
+    "recordSet": "cr:recordSet",
+    "references": "cr:references",
+    "regex": "cr:regex",
+    "repeated": "cr:repeated",
+    "replace": "cr:replace",
+    "sc": "https://schema.org/",
+    "separator": "cr:separator",
+    "source": "cr:source",
+    "subField": "cr:subField",
+    "transform": "cr:transform"
+  },
+  "@type": "sc:Dataset",
+  "name": "AVEPM",
+  "description": "AVE-PM is an audio-visual event localization (AVEL) dataset for portrait-mode short videos. It contains annotations for event boundaries and background music presence (haveBGM). Video content is stored in a compressed archive, and annotations are split across train/val/test CSVs.",
+  "conformsTo": "http://mlcommons.org/croissant/1.0",
+  "citeAs": "@misc{liu2025audiovisualeventlocalizationportrait,title={Audio-visual Event Localization on Portrait Mode Short Videos},author={Wuyang Liu and Yi Chai and Yongpeng Yan and Yanzhen Ren},year={2025},eprint={2504.06884},archivePrefix={arXiv},primaryClass={cs.MM},url={https://arxiv.org/abs/2504.06884},}",
+  "license": "CC BY-NC-SA 4.0",
+  "url": "https://pan.baidu.com/s/1ErDp1zVEe0mugVMmQFbqow?pwd=2979",
+  "version": "1.0",
+  "distribution": [
+    {
+      "@type": "cr:FileObject",
+      "@id": "video-tar-xz",
+      "name": "video.tar.xz",
+      "description": "Compressed video files archive.",
+      "contentUrl": "https://pan.baidu.com/s/1ErDp1zVEe0mugVMmQFbqow?pwd=2979",
+      "encodingFormat": "application/x-xz",
+      "sha256": "c73b6036682dbb9c173cf4ba595a52c6c9dd43c913a0080f8a6af739a7e23cd3"
+    },
+    {
+      "@type": "cr:FileObject",
+      "@id": "train-csv",
+      "name": "train.csv",
+      "description": "Training set annotations.",
+      "contentUrl": "https://pan.baidu.com/s/1ErDp1zVEe0mugVMmQFbqow?pwd=2979",
+      "encodingFormat": "text/csv",
+      "sha256": "528894df30101ac8933c886f1b8c4a37510db73579585c60dc633579b3a5ed79"
+    },
+    {
+      "@type": "cr:FileObject",
+      "@id": "val-csv",
+      "name": "val.csv",
+      "description": "Validation set annotations.",
+      "contentUrl": "https://pan.baidu.com/s/1ErDp1zVEe0mugVMmQFbqow?pwd=2979",
+      "encodingFormat": "text/csv",
+      "sha256": "6df3ea28be327bf8632c6eab0fa6cdabb0c8935796bbc9a1563510b2ec1c7dd6"
+    },
+    {
+      "@type": "cr:FileObject",
+      "@id": "test-csv",
+      "name": "test.csv",
+      "description": "Test set annotations.",
+      "contentUrl": "https://pan.baidu.com/s/1ErDp1zVEe0mugVMmQFbqow?pwd=2979",
+      "encodingFormat": "text/csv",
+      "sha256": "70a0574844b5dd4b7913abe6a0a8c34af5425f6206af64373a9c0834c8aef597"
+    },
+    {
+      "@type": "cr:FileSet",
+      "@id": "annotations-set",
+      "name": "annotation-csvs",
+      "description": "All annotation files: train, val, test.",
+      "containedIn": [
+        {
+          "@id": "train-csv"
+        },
+        {
+          "@id": "val-csv"
+        },
+        {
+          "@id": "test-csv"
+        }
+      ],
+      "encodingFormat": "text/csv",
+      "includes": [
+        "train.csv",
+        "val.csv",
+        "test.csv"
+      ]
+    }
+  ],
+  "recordSet": [
+    {
+      "@type": "cr:RecordSet",
+      "@id": "train",
+      "name": "Train Annotations",
+      "field": [
+        {
+          "@type": "cr:Field",
+          "@id": "train/sample_id",
+          "name": "sample_id",
+          "dataType": "sc:Text",
+          "source": {
+            "fileObject": {
+              "@id": "train-csv"
+            },
+            "extract": {
+              "column": "sample_id"
+            }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "train/event_start",
+          "name": "event_start",
+          "dataType": "sc:Float",
+          "source": {
+            "fileObject": {
+              "@id": "train-csv"
+            },
+            "extract": {
+              "column": "event_start"
+            }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "train/event_end",
+          "name": "event_end",
+          "dataType": "sc:Float",
+          "source": {
+            "fileObject": {
+              "@id": "train-csv"
+            },
+            "extract": {
+              "column": "event_end"
+            }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "train/category",
+          "name": "category",
+          "dataType": "sc:Text",
+          "source": {
+            "fileObject": {
+              "@id": "train-csv"
+            },
+            "extract": {
+              "column": "category"
+            }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "train/haveBGM",
+          "name": "haveBGM",
+          "dataType": "sc:Text",
+          "source": {
+            "fileObject": {
+              "@id": "train-csv"
+            },
+            "extract": {
+              "column": "haveBGM"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "@type": "cr:RecordSet",
+      "@id": "val",
+      "name": "Validation Annotations",
+      "field": [
+        {
+          "@type": "cr:Field",
+          "@id": "val/sample_id",
+          "name": "sample_id",
+          "dataType": "sc:Text",
+          "source": {
+            "fileObject": {
+              "@id": "val-csv"
+            },
+            "extract": {
+              "column": "sample_id"
+            }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "val/event_start",
+          "name": "event_start",
+          "dataType": "sc:Float",
+          "source": {
+            "fileObject": {
+              "@id": "val-csv"
+            },
+            "extract": {
+              "column": "event_start"
+            }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "val/event_end",
+          "name": "event_end",
+          "dataType": "sc:Float",
+          "source": {
+            "fileObject": {
+              "@id": "val-csv"
+            },
+            "extract": {
+              "column": "event_end"
+            }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "val/category",
+          "name": "category",
+          "dataType": "sc:Text",
+          "source": {
+            "fileObject": {
+              "@id": "val-csv"
+            },
+            "extract": {
+              "column": "category"
+            }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "val/haveBGM",
+          "name": "haveBGM",
+          "dataType": "sc:Text",
+          "source": {
+            "fileObject": {
+              "@id": "val-csv"
+            },
+            "extract": {
+              "column": "haveBGM"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "@type": "cr:RecordSet",
+      "@id": "test",
+      "name": "Test Annotations",
+      "field": [
+        {
+          "@type": "cr:Field",
+          "@id": "test/sample_id",
+          "name": "sample_id",
+          "dataType": "sc:Text",
+          "source": {
+            "fileObject": {
+              "@id": "test-csv"
+            },
+            "extract": {
+              "column": "sample_id"
+            }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "test/event_start",
+          "name": "event_start",
+          "dataType": "sc:Float",
+          "source": {
+            "fileObject": {
+              "@id": "test-csv"
+            },
+            "extract": {
+              "column": "event_start"
+            }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "test/event_end",
+          "name": "event_end",
+          "dataType": "sc:Float",
+          "source": {
+            "fileObject": {
+              "@id": "test-csv"
+            },
+            "extract": {
+              "column": "event_end"
+            }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "test/category",
+          "name": "category",
+          "dataType": "sc:Text",
+          "source": {
+            "fileObject": {
+              "@id": "test-csv"
+            },
+            "extract": {
+              "column": "category"
+            }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "test/haveBGM",
+          "name": "haveBGM",
+          "dataType": "sc:Text",
+          "source": {
+            "fileObject": {
+              "@id": "test-csv"
+            },
+            "extract": {
+              "column": "haveBGM"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

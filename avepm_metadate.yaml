@@ -1,0 +1,84 @@
+@context: "https://mlcommons.org/croissant/context/v1"
+name: "AVE-PM"
+description: "AVEL dataset designed for portrait-mode short videos."
+
+dataFiles:
+  - name: "videos"
+    description: "Raw videos for AVE-PM dataset"
+    source: "file:///data1/lwy/ave-pm-dataset/data/videos/"
+
+  - name: "annotations"
+    description: "Annotations for each video segment"
+    source: "file:///data1/lwy/ave-pm-dataset/data/final_annotations_with_label_filtered.csv"
+
+columns:
+  - name: "sample_id"
+    description: "Sample index"
+    dataType: integer
+    source: annotations
+
+  - name: "video_id"
+    description: "Unique video identifier, corresponding video file is named {video_id}.mp4"
+    dataType: string
+    source: annotations
+
+  - name: "start"
+    description: "Start time of the segment in seconds"
+    dataType: number
+    source: annotations
+
+  - name: "end"
+    description: "End time of the segment in seconds"
+    dataType: number
+    source: annotations
+
+  - name: "event_start"
+    description: "Start time of the event in seconds"
+    dataType: number
+    source: annotations
+
+  - name: "event_end"
+    description: "End time of the event in seconds"
+    dataType: number
+    source: annotations
+
+  - name: "duration"
+    description: "Duration of the original video in seconds"
+    dataType: number
+    source: annotations
+
+  - name: "category"
+    description: "Integer ID representing the event category"
+    dataType: integer
+    source: annotations
+
+  - name: "onset"
+    description: "Onset of the event in seconds"
+    dataType: number
+    source: annotations
+
+  - name: "offset"
+    description: "Offset of the event in seconds"
+    dataType: number
+    source: annotations
+
+  - name: "haveBGM"
+    description: "Whether the segment has background music"
+    dataType: integer
+    source: annotations
+
+  - name: "audio_irrelevant"
+    description: "Whether the segment is audio-irrelevant"
+    dataType: integer
+    source: annotations
+
+  - name: "label"
+    description: "Label of the event"
+    dataType: integer
+    source: annotations
+
+  - name: "event_duration"
+    description: "Duration of the labeled event in seconds"
+    dataType: number
+    source: annotations
+
