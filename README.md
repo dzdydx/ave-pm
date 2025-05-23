@@ -1,7 +1,7 @@
 # AVE-PM: An Audio-visual Event Localization Dataset for Portrait Mode Short Videos
 
 ![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)
-![License](https://img.shields.io/badge/license-MIT-green.svg)
+![License](https://img.shields.io/badge/license-CC%20BY--NC--SA%204.0-green.svg)
 
 **Update**: The AVE-PM project page is now available - [check it out!](https://dzdydx.github.io/ave-pm-homepage/)
 
@@ -180,7 +180,9 @@ We acknowledge the following foundational works:
 - **LAVISH (LAVISH@ICCV'23):**
    https://genjib.github.io/project_page/LAVISH/
 - **ByteDance Portrait-Mode Video Recognition:**
-   https://github.com/bytedance/portrait-video-recognition
+   https://github.com/bytedance/Portrait-Mode-Video
 
 
+## 📄 License
 
+This project is licensed under the [Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License](LICENSE).
