@@ -1,8 +1,9 @@
 #!/bin/bash
-nohup python3 main_trans.py \
+cd LAVISH/
+python3 main_trans.py \
         --Adapter_downsample=8 \
-        --audio_folder=/dataset/data//raw_audio \
-        --video_folder=/dataset/data/video_frames \
+        --audio_folder=dataset/data/raw_audios \
+        --video_folder=dataset/data/video_frames \
         --batch_size=2 \
         --early_stop=5 \
         --epochs=50 \
@@ -23,5 +24,12 @@ nohup python3 main_trans.py \
         --num_workers=16 \
         --is_multimodal=1 \
         --vis_encoder_type=swin \
-        --ave=true \
-        > output/train.log 2>&1 &
+        --ave=false \
+        --avepm=true \
+        --data_root=dataset/feature/features \
+        --meta_root=dataset/csvfiles \
+        --preprocess_mode=None \
+        --audio_process_mode=None \
+        --is_select=False \
+        --snapshot_pref=exp/ \
+        --processed_audio_root=dataset/data/processed_audios \

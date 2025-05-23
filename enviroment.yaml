@@ -1,4 +1,4 @@
-name: AVEPM
+name: AVE-PM
 channels:
   - pytorch
   - nvidia

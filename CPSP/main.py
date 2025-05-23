@@ -29,7 +29,7 @@ config_path = parser.parse_args().config
 with open(config_path, "r") as f:
     args_map = yaml.safe_load(f)
 
-args = type('DynamicObject', (), args_map)()
+args = type('DynamicObject', (), args_map)()  #动态构造了一个对象 args，可以用 args.lr、args.epochs 方式访问这些参数
 
  # =================================  seed config ============================
 SEED = args.seed
@@ -43,15 +43,14 @@ torch.backends.cudnn.benchmark = False
 
 
 # select GPUs
-# os.environ['CUDA_DEVICE_ORDER'] = "0"
 os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
 
 '''Create snapshot_pred dir for copying code and saving models '''
 if not os.path.exists(args.snapshot_pref):
     os.makedirs(args.snapshot_pref, exist_ok=True)
 
-# if os.path.isfile(args.resume):
-#     args.snapshot_pref = os.path.dirname(args.resume)
+if os.path.isfile(args.resume):
+    args.snapshot_pref = os.path.dirname(args.resume)
 
 logger = Prepare_logger(args, eval=args.evaluate)
 
@@ -61,87 +60,88 @@ if not args.evaluate:
 else:
     logger.info(f'\nLog file will be save in a {args.snapshot_pref}/Eval.log.')
 
-
-# # '''Tensorboard and Code backup'''
-# writer = SummaryWriter(args.snapshot_pref)
-# recorder = Recorder(args.snapshot_pref, ignore_folder="Exps/")
-# recorder.writeopt(args)
-
-
 """dataset selection"""
-from dataset.dataset import Audio_Preprocess_Dataset as AVEDataset
+from dataset.dataset import AVEDataset
 
 def main():
     '''Dataloader selection'''
-    # if args.dataset_name == 'ave':
-    #     data_root = 'please change this path to the path of AVE data'
-    #     train_dataloader = DataLoader(
-    #         AVEDataset(data_root, args, split='train'),
-    #         batch_size=args.batch_size,
-    #         shuffle=True,
-    #         num_workers=8,
-    #         pin_memory=True
-    #     )
-    #     val_dataloader = DataLoader(
-    #         AVEDataset(data_root, args, split='val'),
-    #         batch_size=args.batch_size,
-    #         shuffle=False,
-    #         num_workers=8,
-    #         pin_memory=True
-    #     )
-    #     test_dataloader = DataLoader(
-    #         AVEDataset(data_root, args, split='test'),
-    #         batch_size=args.batch_size,
-    #         shuffle=False,
-    #         num_workers=8,
-    #         pin_memory=True
-    #     )
-    # else:
-    #     raise NotImplementedError
-    # data_root = args.data_root
-    # meta_root = args.meta_root
-    # train_dataloader = DataLoader(
-    #     AVEDataset(data_root, meta_root, split='train'),
-    #     batch_size=args.batch_size,
-    #     shuffle=True,
-    #     num_workers=8,
-    # )
-    # val_dataloader = DataLoader(
-    #     AVEDataset(data_root, meta_root, split='val'),
-    #     batch_size=args.batch_size,
-    #     shuffle=False,
-    #     num_workers=8,
-    # )
-    # test_dataloader = DataLoader(
-    #     AVEDataset(data_root, meta_root, split='test'),
-    #     batch_size=args.batch_size,
-    #     shuffle=False,
-    #     num_workers=8,
-    # )
-
-    # MARK:dataset
+    is_select = args.is_select
+    audio_process_mode = args.audio_preprocess_mode
     data_root = args.data_root
     meta_root = args.meta_root
-    audio_preprocess_mode = "NMF2"
-    token = "sample_id"
+    ave = args.ave
+    avepm = args.avepm
+    if ave == False and avepm == False:
+        raise ValueError("Please choose one of the two datasets: AVE or AVEPM")
+    if ave == True and avepm == True:
+        raise ValueError("Please choose only one of the two datasets: AVE or AVEPM")
+    if args.is_select:
+        args.category_num = 10
+    else:
+        if args.ave:
+            args.category_num = 28
+        elif args.avepm:
+            args.category_num = 86
+            
+    preprocess_mode = args.preprocess
+    v_feature_root = args.v_feature_root
+    a_feature_root = args.a_feature_root
+
+    # MARK: Dataset
     train_dataloader = DataLoader(
-        AVEDataset(data_root, meta_root, split='train', audio_preprocess_mode=audio_preprocess_mode, token=token),
+        AVEDataset(
+            split='train',
+            data_root=data_root,
+            meta_root=meta_root,
+            ave=ave,
+            avepm=avepm,
+            preprocess_mode=preprocess_mode,
+            audio_process_mode=audio_process_mode,
+            is_select=is_select,
+            a_feature_root=a_feature_root,
+            v_feature_root=v_feature_root),
         batch_size=args.batch_size,
         shuffle=True,
         num_workers=8,
+        pin_memory=True
     )
+
     val_dataloader = DataLoader(
-        AVEDataset(data_root, meta_root, split='val', audio_preprocess_mode=audio_preprocess_mode, token=token),    
-        batch_size=args.batch_size,
+        AVEDataset(
+            split='val',
+            data_root=data_root,
+            meta_root=meta_root,
+            ave=ave,
+            avepm=avepm,
+            preprocess_mode=preprocess_mode,
+            audio_process_mode=audio_process_mode,
+            is_select=is_select,
+            a_feature_root=a_feature_root,
+            v_feature_root=v_feature_root),
+        batch_size=args.test_batch_size,
         shuffle=False,
         num_workers=8,
+        pin_memory=True
     )
+
     test_dataloader = DataLoader(
-        AVEDataset(data_root, meta_root, split='test', audio_preprocess_mode=audio_preprocess_mode, token=token),
-        batch_size=args.batch_size,
+        AVEDataset(
+            split='test',
+            data_root=data_root,
+            meta_root=meta_root,
+            ave=ave,
+            avepm=avepm,
+            preprocess_mode=preprocess_mode,
+            audio_process_mode=audio_process_mode,
+            is_select=is_select,
+            a_feature_root=a_feature_root,
+            v_feature_root=v_feature_root),
+        batch_size=args.test_batch_size,
         shuffle=False,
         num_workers=8,
+        pin_memory=True
     )
+
 
     ''' Model selection '''
     if 'psp' in args.model:

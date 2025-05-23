@@ -1,5 +1,5 @@
-
-nohup python supv_main.py \
+cd CMBS/
+python supv_main.py \
 --gpu 0 \
 --lr 0.0007 \
 --clip_gradient 0.5 \
@@ -7,5 +7,13 @@ nohup python supv_main.py \
 --n_epoch 200 \
 --b 64 \
 --test_batch_size 16 \
---print_freq 1 \
-> log.log 2>&1 &
+--print_freq 100 \
+--avepm True \
+--ave false \
+--preprocess 'None' \
+--audio_preprocess 'None' \
+--is_select false \
+--data_root "dataset/feature/features/" \
+--meta_root "dataset/csvfiles/" \
+--v_feature_root "dataset/feature/preprocess_visual_feature" \
+--a_feature_root "dataset/feature/preprocess_audio_feature" \

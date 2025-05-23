@@ -279,7 +279,7 @@ class MMIL_Net(nn.Module):
 
 		self.mlp_class = nn.Linear(1536*2, 512) # swinv2-Large
 		# self.mlp_class_2 = nn.Linear(512, 29)
-		self.mlp_class_2 = nn.Linear(512, 86)		# 分类层
+		self.mlp_class_2 = nn.Linear(512, opt.category_num)		# 分类层
 
 		# self.mlp_class = nn.Linear(1024*2, 512) # swinv2-Base and vit-large
 		# self.mlp_class_2 = nn.Linear(512, 29)

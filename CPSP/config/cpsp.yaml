@@ -1,7 +1,7 @@
 # training args
 seed: 123
 lr: 0.001
-snapshot_pref: "./TestExps/CPSP/train/"
+snapshot_pref: "./TestExps/CPSP"
 batch_size: 64
 test_batch_size: 64
 n_epoch: 45

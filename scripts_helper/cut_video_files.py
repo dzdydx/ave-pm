@@ -14,8 +14,8 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 ])
 logger = logging.getLogger(__name__)
 
-input_annotation_path = "./annotations-finished.csv"
-videos_dir = "/data1/datasets/PM-400/data/data"
+input_annotation_path = "dataset/csvfiles/annotations-finished.csv"
+videos_dir = "dataset/PM-400/data/data"
 out_videos_dir = "./data/videos"
 out_annotation_path = "./data/annotations.csv"
 label_csv = "./merged_pmv400.csv"

@@ -58,11 +58,7 @@ import warnings
 warnings.filterwarnings("ignore", category=FutureWarning)
 
 
-if args.bgm:
-    from dydataloader import ExceptBGMDataset as DY_dataset
-    print("excepting bgm")
-else:
-    from dydataloader import DY_dataset
+from dydataloader import AVELDataset
 
 def train(args, model, train_loader, optimizer, criterion, epoch):
     model.train()
@@ -133,14 +129,20 @@ def eval(model, val_loader, args):
     return acc
 
 def main():
-
-    # Training settings
-    # from base_options import BaseOptions
-    # args = BaseOptions().parse()
-
     if args.wandb:
         wandb.init(config=args, project="ada_av",name=args.model_name)
-
+    if args.ave == False and args.avepm == False:
+        raise ValueError("Please choose one of the two datasets: ave or avepm")
+    if args.ave == True and args.avepm == True:
+        raise ValueError("Please choose only one of the two datasets: ave or avepm")
+    
+    if args.is_select:
+        args.category_num = 10
+    else:
+        if args.ave:
+            args.category_num = 28
+        elif args.avepm:
+            args.category_num = 86
 
     model = MMIL_Net(args).to('cuda')
 
@@ -148,13 +150,22 @@ def main():
     ## -------> condition for wandb tune
     if args.start_tune_layers > args.start_fusion_layers: 
         exit()
-    #### <------
+    #MARK: dataset
+    
     if args.mode == 'train':
+        train_dataset = AVELDataset(opt=args, 
+                                    data_root=args.data_root, meta_root=args.meta_root,
+                                    ave=args.ave, avepm=args.avepm, 
+                                    preprocess_mode=args.preprocess_mode, audio_process_mode=args.audio_process_mode, 
+                                    processed_audio_root=args.processed_audio_root, is_select=args.is_select,
+                                    split='train')
 
-        # train_dataset = AVE_dataset(opt = args)
-        # val_dataset = AVE_dataset(opt = args, mode='test')
-        train_dataset = DY_dataset(opt=args, ave=args.ave, avepm=args.avepm, mode='train')
-        val_dataset = DY_dataset(opt=args, ave=args.ave, avepm=args.avepm, mode='val')
+        val_dataset = AVELDataset(opt=args, 
+                                    data_root=args.data_root, meta_root=args.meta_root,
+                                    ave=args.ave, avepm=args.avepm, 
+                                    preprocess_mode=args.preprocess_mode, audio_process_mode=args.audio_process_mode, 
+                                    processed_audio_root=args.processed_audio_root, is_select=args.is_select,
+                                    split='val')
 
         
         train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers, pin_memory = True)
@@ -233,16 +244,14 @@ def main():
                 best_F = F_event
                 print('#################### save model #####################')
                 if args.ave:
-                    save_dir = "models/ave"
+                    save_dir = f"{args.snapshot_pref}ave/V_{args.preprocess_mode}_A_{args.audio_process_mode}/"
 
                 if args.avepm:
-                    save_dir = "models/avepm"
-                
-                if args.bgm:
-                    save_dir = "models/bgm"
+                    save_dir = f"{args.snapshot_pref}avepm/V_{args.preprocess_mode}_A_{args.audio_process_mode}/"
+            
                 
                 if not os.path.exists(save_dir):
-                    os.mkdir(save_dir)
+                    os.makedirs(save_dir, exist_ok=True)
 
                 torch.save(model.state_dict(), os.path.join(save_dir, "epoch_{}_{:.4f}.pt".format(epoch, best_F)))
                 if args.wandb:
@@ -252,7 +261,12 @@ def main():
             #     exit()
 
     elif args.mode == 'test':
-        test_dataset = DY_dataset(opt=args, ave=args.ave, avepm=args.avepm, mode='test')
+        test_dataset = AVELDataset(opt=args, 
+                                    data_root=args.data_root, meta_root=args.meta_root,
+                                    ave=args.ave, avepm=args.avepm, 
+                                    preprocess_mode=args.preprocess_mode, audio_process_mode=args.audio_process_mode, 
+                                    processed_audio_root=args.processed_audio_root, is_select=args.is_select,
+                                    split='test')
     
         test_loader = DataLoader(test_dataset, batch_size=8, shuffle=False, num_workers=1, pin_memory=True)
         model.load_state_dict(torch.load(args.model_save_dir))

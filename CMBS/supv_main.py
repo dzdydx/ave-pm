@@ -16,7 +16,7 @@ from configs.opts import parser
 from model.main_model import supv_main_model as main_model
 from utils import AverageMeter, Prepare_logger, get_and_save_args
 from utils.Recorder import Recorder
-from dataset.AVE_dataset import AVEDataset, DouyinDataset, ScaleDataset, Audio_Preprocess_Dataset
+from dataset.AVE_dataset import AVEDataset
 import torch.nn.functional as F
 
 # =================================  seed config ============================
@@ -76,68 +76,33 @@ def main():
         logger.info(f'\nLog file will be save in a {args.snapshot_pref}/Eval.log.')
 
     '''Dataset'''
-    # train_dataloader = DataLoader(
-    #     AVEDataset('./data/', split='train'),
-    #     batch_size=args.batch_size,
-    #     shuffle=True,
-    #     num_workers=8,
-    #     pin_memory=True
-    # )
-
-    # test_dataloader = DataLoader(
-    #     AVEDataset('./data/', split='test'),
-    #     batch_size=args.test_batch_size,
-    #     shuffle=False,
-    #     num_workers=8,
-    #     pin_memory=True
-    # )
-    # train_dataloader = DataLoader(
-    #     DouyinDataset(split='train', ave=args.ave, avepm=args.avepm),
-    #     batch_size=args.batch_size,
-    #     shuffle=True,
-    #     num_workers=8,
-    #     pin_memory=True
-    # )
-
-    # test_dataloader = DataLoader(
-    #     DouyinDataset(split='val', ave=args.ave, avepm=args.avepm),
-    #     batch_size=args.test_batch_size,
-    #     shuffle=False,
-    #     num_workers=8,
-    #     pin_memory=True
-    # )
-
-    # train_dataloader = DataLoader(
-    #     ScaleDataset(split='train', ave=args.ave, avepm=args.avepm, preprocess_mode=args.preprocess),
-    #     batch_size=args.batch_size,
-    #     shuffle=True,
-    #     num_workers=8,
-    #     pin_memory=True
-    # )
-
-    # val_dataloader = DataLoader(
-    #     ScaleDataset(split='test', ave=args.ave, avepm=args.avepm, preprocess_mode=args.preprocess),
-    #     batch_size=args.test_batch_size,
-    #     shuffle=False,
-    #     num_workers=8,
-    #     pin_memory=True
-    # )
-
-    # test_dataloader = DataLoader(
-    #     ScaleDataset(split='test', ave=args.ave, avepm=args.avepm, preprocess_mode=args.preprocess),
-    #     batch_size=args.test_batch_size,
-    #     shuffle=False,
-    #     num_workers=8,
-    #     pin_memory=True
-    # )
+    is_select = args.is_select
+    audio_process_mode = args.audio_preprocess_mode
+    data_root = args.data_root
+    meta_root = args.meta_root
+    ave = args.ave
+    avepm = args.avepm
+    if ave == False and avepm == False:
+        raise ValueError("Please choose one of the two datasets: AVE or AVEPM")
+    if ave == True and avepm == True:
+        raise ValueError("Please choose only one of the two datasets: AVE or AVEPM")
+    preprocess_mode = args.preprocess
+    v_feature_root = args.v_feature_root
+    a_feature_root = args.a_feature_root
 
     # MARK: Dataset
-    is_select = False
-    # is_select = True
-    audio_process_mode = "NMF1"
-    # audio_process_mode = "NMF2"
     train_dataloader = DataLoader(
-        Audio_Preprocess_Dataset(split='train', is_select=is_select, audio_process_mode=audio_process_mode),
+        AVEDataset(
+            split='train',
+            data_root=data_root,
+            meta_root=meta_root,
+            ave=ave,
+            avepm=avepm,
+            preprocess_mode=preprocess_mode,
+            audio_process_mode=audio_process_mode,
+            is_select=is_select,
+            a_feature_root=a_feature_root,
+            v_feature_root=v_feature_root),
         batch_size=args.batch_size,
         shuffle=True,
         num_workers=8,
@@ -145,7 +110,17 @@ def main():
     )
 
     val_dataloader = DataLoader(
-        Audio_Preprocess_Dataset(split='val', is_select=is_select, audio_process_mode=audio_process_mode),
+        AVEDataset(
+            split='val',
+            data_root=data_root,
+            meta_root=meta_root,
+            ave=ave,
+            avepm=avepm,
+            preprocess_mode=preprocess_mode,
+            audio_process_mode=audio_process_mode,
+            is_select=is_select,
+            a_feature_root=a_feature_root,
+            v_feature_root=v_feature_root),
         batch_size=args.test_batch_size,
         shuffle=False,
         num_workers=8,
@@ -153,7 +128,17 @@ def main():
     )
 
     test_dataloader = DataLoader(
-        Audio_Preprocess_Dataset(split='test', is_select=is_select, audio_process_mode=audio_process_mode),
+        AVEDataset(
+            split='test',
+            data_root=data_root,
+            meta_root=meta_root,
+            ave=ave,
+            avepm=avepm,
+            preprocess_mode=preprocess_mode,
+            audio_process_mode=audio_process_mode,
+            is_select=is_select,
+            a_feature_root=a_feature_root,
+            v_feature_root=v_feature_root),
         batch_size=args.test_batch_size,
         shuffle=False,
         num_workers=8,
@@ -161,12 +146,18 @@ def main():
     )
 
     '''model setting'''
+    if is_select:
+        config['model']['category_num'] = 10
+    else:
+        if ave:
+            config['model']['category_num'] = 28
+        elif avepm:
+            config['model']['category_num'] = 86
     mainModel = main_model(config['model'])
     mainModel = nn.DataParallel(mainModel).cuda()
     mainModel = mainModel.float()
     learned_parameters = mainModel.parameters()
     optimizer = torch.optim.Adam(learned_parameters, lr=args.lr)
-    # scheduler = StepLR(optimizer, step_size=40, gamma=0.2)
     scheduler = MultiStepLR(optimizer, milestones=[10, 20, 30], gamma=0.5)
     criterion = nn.BCEWithLogitsLoss().cuda()
     criterion_event = nn.CrossEntropyLoss().cuda()
@@ -372,7 +363,7 @@ def compute_accuracy_supervised(is_event_scores, event_scores, labels):
 
 
 def save_checkpoint(state_dict, top1, task, epoch):
-    model_name = f'{args.snapshot_pref}/model_epoch_{epoch}_top1_{top1:.3f}_task_{task}_best_model.pth.tar'
+    model_name = f'{args.snapshot_pref}/epoch_{epoch}_{top1:.3f}_best_model.pth.tar'
     torch.save(state_dict, model_name)
 
 

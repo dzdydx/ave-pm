@@ -82,13 +82,13 @@ class CAS_Module(nn.Module):
 
 
 class SupvLocalizeModule(nn.Module):
-    def __init__(self, d_model):
+    def __init__(self, d_model, category_num):
         super(SupvLocalizeModule, self).__init__()
         # self.affine_concat = nn.Linear(2*256, 256)
         self.relu = nn.ReLU(inplace=True)
         self.classifier = nn.Linear(d_model, 1)  # start and end
         # MARK: category num
-        self.event_classifier = nn.Linear(d_model, 86)
+        self.event_classifier = nn.Linear(d_model, category_num)
         # self.cas_model = CAS_Module(d_model=d_model, num_class=28)
 
     # self.softmax = nn.Softmax(dim=-1)
@@ -291,6 +291,7 @@ class supv_main_model(nn.Module):
 
         self.video_fc_dim = 512
         self.d_model = self.config['d_model']
+        self.category_num = self.config['category_num']
 
         self.v_fc = nn.Linear(self.video_input_dim, self.video_fc_dim)
         self.relu = nn.ReLU()
@@ -313,12 +314,12 @@ class supv_main_model(nn.Module):
 
         self.AVInter = AudioVideoInter(self.d_model, n_head=4, head_dropout=0.2)
         self.VAInter = AudioVideoInter(self.d_model, n_head=4, head_dropout=0.2)
-        self.localize_module = SupvLocalizeModule(self.d_model)
+        self.localize_module = SupvLocalizeModule(self.d_model, self.category_num)
         self.video_norm = nn.LayerNorm(self.d_model)
         self.audio_norm = nn.LayerNorm(self.d_model)
         # MARK: category
-        self.audio_cas = nn.Linear(self.d_model, 86)
-        self.video_cas = nn.Linear(self.d_model, 86)
+        self.audio_cas = nn.Linear(self.d_model, self.category_num)
+        self.video_cas = nn.Linear(self.d_model, self.category_num)
         self.alpha = self.config['alpha']
         self.gamma = self.config['gamma']
 

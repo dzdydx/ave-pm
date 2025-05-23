@@ -1,5 +1,6 @@
 import argparse
-
+def str2bool(str):
+	return True if str.lower() == 'true' else False
 parser = argparse.ArgumentParser(description="A project implemented in pyTorch")
 
 # =========================== Learning Configs ============================
@@ -25,8 +26,14 @@ parser.add_argument('--save_freq', type=int)
 parser.add_argument('--eval_freq', type=int)
 
 # =========================== Data Configs ============================
-parser.add_argument('--ave', type=bool, default=False)
-parser.add_argument('--avepm', type=bool, default=False)
-parser.add_argument('--preprocess', type=str, default='center_crop')
-
+parser.add_argument('--ave', type=str2bool, default=False)
+parser.add_argument('--avepm', type=str2bool, default=False)
+parser.add_argument('--preprocess', type=str, default='None', help='std_resize, center_crop, random_crop, inception, longer_side_resize, None')
+parser.add_argument('--audio_preprocess_mode', type=str, default='None', help="NMF1, NMF2, LMS, None")
+parser.add_argument('--is_select', type=str2bool, default=False)
+parser.add_argument('--category_num', type=int, default=86)
+parser.add_argument('--data_root', type=str, default='dataset/feature/features/')
+parser.add_argument('--meta_root', type=str, default='dataset/csvfiles/')
+parser.add_argument('--v_feature_root', type=str, default='dataset/feature/preprocess_visual_feature')
+parser.add_argument('--a_feature_root', type=str, default='dataset/feature/preprocess_audio_feature')
 

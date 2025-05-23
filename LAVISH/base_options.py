@@ -11,18 +11,19 @@ import os
 # from util import util
 import torch
 
+
+def str2bool(v):
+	if v.lower() in ('yes', 'true', 't', 'y', '1'):
+		return True
+	elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+		return False
+	
 class BaseOptions():
 	def __init__(self):
 		self.parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 		self.initialized = False
 
 	def initialize(self):
-
-		self.parser.add_argument("--warm_up", type=int, default=5, help="warm up")
-		self.parser.add_argument("--alpha_loss", type=float, default=1, help="alpha loss")
-		self.parser.add_argument("--exp_time", type=str, default="", help="exp time")
-		self.parser.add_argument("--visual_operation", type=bool, default=False, help="visual opration")
-		
 		self.parser.add_argument(
 			"--audio_dir", type=str, default='data/feats/vggish/', help="audio dir")
 		self.parser.add_argument(
@@ -188,13 +189,17 @@ class BaseOptions():
 		self.parser.add_argument('--vis_encoder_type', type=str, default="swin", help="type of visual backbone")
 
 		## dataset choose
-		self.parser.add_argument('--ave', type=bool, default=False)
-		self.parser.add_argument('--avepm', type=bool, default=False)
-		self.parser.add_argument('--scale_mode', type=str, default='scale', help="scale mode")
+		self.parser.add_argument('--ave', type=str2bool, default=False)
+		self.parser.add_argument('--avepm', type=str2bool, default=False)
 		self.parser.add_argument('--device', type=str, default='0', help="device")
-		self.parser.add_argument('--bgm', type=bool, default=False)
-		
-		
+		self.parser.add_argument('--data_root', type=str, default='dataset/feature/features', help="pickle feature root")
+		self.parser.add_argument('--meta_root', type=str, default="/data1/cy/nips/dataset/csvfiles", help="meta root")
+		self.parser.add_argument('--preprocess_mode', type=str, choices=['center_crop', 'random_crop', 'inception', 'longer_side_resize', 'None'], default='None', help="visual preprocess mode: center_crop, random_crop, inception, longer_side_resize, None")
+		self.parser.add_argument('--audio_process_mode', type=str, choices=['NMF1', 'NMF2', 'LMS', 'None'], default='None', help="audio preprocess mode: NMF1, NMF2, LMS, None")
+		self.parser.add_argument('--is_select', type=str2bool, default=False, help="select data or not")
+		self.parser.add_argument('--processed_audio_root', type=str, default='dataset/data/processed_audios', help="processed audio root")
+		self.parser.add_argument('--snapshot_pref', type=str, default='/data1/cy/nips/LAVISH/exp', help="experiment dir")
+		self.parser.add_argument('--category_num', type=int, default=86, help="num of classes")
 
 		
 

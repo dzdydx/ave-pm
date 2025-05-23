@@ -3,9 +3,16 @@ import moviepy
 from moviepy.audio.AudioClip import AudioArrayClip
 from moviepy.editor import VideoFileClip
 
-video_pth =  "/data1/yyp/AVEL/VGG/AVE_dataset/AVE_Dataset/AVE"
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--video_pth', type=str, default='/data1/yyp/AVEL/VGG/AVE_dataset/AVE_Dataset/AVE', help='path to video')
+parser.add_argument('--save_pth', type=str, default='/data1/yyp/AVEL/LAVISH/AVE_Dataset/raw_audio', help='path to save audio')
+args = parser.parse_args()
+
+video_pth =  args.video_pth
 sound_list = os.listdir(video_pth)
-save_pth =  "/data1/yyp/AVEL/LAVISH/AVE_Dataset/raw_audio"
+save_pth =  args.save_pth
 
 for audio_id in sound_list:
     name = os.path.join(video_pth, audio_id)
