@@ -433,4 +433,3 @@ dependencies:
       - yt-dlp==2024.5.27
       - zenodo-get==1.6.1
       - zipp==3.18.1
-prefix: /data1/anaconda3/envs/yyp

@@ -7,6 +7,7 @@ from pathlib import Path
 from moviepy import VideoFileClip
 import pandas as pd
 import logging
+import os
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s', handlers=[
     logging.FileHandler("out.log"),
@@ -14,21 +15,6 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 ])
 logger = logging.getLogger(__name__)
 
-input_annotation_path = "dataset/csvfiles/annotations-finished.csv"
-videos_dir = "dataset/PM-400/data/data"
-out_videos_dir = "./data/videos"
-out_annotation_path = "./data/annotations.csv"
-label_csv = "./merged_pmv400.csv"
-final_annotation_path = "./data/final_annotations.csv"
-
-# prepare annotation df
-label_df = pd.read_csv(label_csv)
-
-df = pd.read_csv(input_annotation_path)
-df = df[df['file_invalid'] == 0]
-df = df.drop_duplicates(subset=['video_id'], keep='last') # only keep the last annotation for each video
-df['event_duration'] = df['end_time'] - df['start_time']
-df = df[df['event_duration'] >= 1] # only keep events with duration >= 1s
 
 def split_video_into_segments(duration, start_time, end_time):
     if duration < 10:
@@ -65,11 +51,22 @@ def split_video_into_segments(duration, start_time, end_time):
     else:
         return segments_backward
 
-def generate_clip_annotations():
+def generate_clip_annotations(args):
+    input_annotation_path = args.annotation_csv
+    label_csv = args.label_csv
+    videos_dir = args.videos_dir
+    out_annotation_path = args.out_annotation_csv
+
+    label_df = pd.read_csv(label_csv)
+    df = pd.read_csv(input_annotation_path)
+    df = df[df['file_invalid'] == 0]
+    df = df.drop_duplicates(subset=['video_id'], keep='last')
+    df['event_duration'] = df['end_time'] - df['start_time']
+    df = df[df['event_duration'] >= 1]
+
     sample_count = 0
     processed_videos = set()
 
-    # 恢复进度
     if Path(out_annotation_path).exists():
         processed_videos_df = pd.read_csv(out_annotation_path)
         processed_videos = set(processed_videos_df['video_id'].unique())
@@ -101,10 +98,7 @@ def generate_clip_annotations():
             category = label_df[label_df["video_id"] == row["video_id"]]["label"].values[0]
 
             try:
-                sys.stdout = open('moviepy.log', 'a')
                 clip = VideoFileClip(str(video_path))
-                sys.stdout = sys.__stdout__
-
                 duration = clip.duration
 
                 segments = split_video_into_segments(duration, start_time, end_time)
@@ -115,7 +109,6 @@ def generate_clip_annotations():
                     if start < 0 or end < 0 or start > duration or end > duration:
                         raise ValueError(f"Invalid segment: {start} - {end}")
 
-                    # 计算事件在片段中的onset和offset
                     if start_time >= start and end_time <= end:
                         onset = round(start_time - start, 2)
                         offset = round(end_time - start, 2)
@@ -144,15 +137,19 @@ def generate_clip_annotations():
             except Exception as e:
                 logger.error(f"Error processing video {i} / {len(valid_df)}: {video_path}. Error: {e}")
 
-def cut_clips():
-    processed_clips = set()
+def cut_clips(args):
+    annotation_csv = args.annotation_csv
+    videos_dir = args.videos_dir
+    out_videos_dir = args.out_videos_dir
 
-    # 恢复进度
+    os.makedirs(out_videos_dir, exist_ok=True)
+
+    processed_clips = set()
     if Path(out_videos_dir).exists():
         processed_clips = {clip.stem for clip in Path(out_videos_dir).glob("*.mp4")}
         logging.info(f"Restarting process. {len(processed_clips)} clips already processed.")
 
-    df = pd.read_csv(final_annotation_path)
+    df = pd.read_csv(annotation_csv)
     for i, row in tqdm(df.iterrows(), total=len(df)):
         if str(row["sample_id"]) in processed_clips:
             continue
@@ -163,9 +160,7 @@ def cut_clips():
             continue
 
         try:
-            sys.stdout = open('moviepy.log', 'a')
             clip = VideoFileClip(str(video_path))
-            sys.stdout = sys.__stdout__
 
             clip_name = f"{row['sample_id']}.mp4"
             clip_path = Path(out_videos_dir) / clip_name
@@ -183,15 +178,33 @@ def cut_clips():
         except Exception as e:
             logger.error(f"Error processing clip {i}/{len(df)}: {clip_path}. Error: {e}")
 
-# add arguments
-parser = argparse.ArgumentParser()
-parser.add_argument("--generate_clip_annotations", action="store_true", help="Generate clip level annotations from videos")
-parser.add_argument("--cut_clips", action="store_true", help="Cut clips from videos")
-
-args = parser.parse_args()
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Cut video clips from PM-400 dataset for AVE-PM")
+    parser.add_argument("--generate_clip_annotations", action="store_true",
+                        help="Generate clip-level annotations from video-level annotations")
+    parser.add_argument("--cut_clips", action="store_true",
+                        help="Cut 10-second clips from original videos")
+
+    # Shared paths
+    parser.add_argument("--videos_dir", type=str, default="dataset/PM-400/videos",
+                        help="Directory containing source videos")
+    parser.add_argument("--annotation_csv", type=str, default="dataset/PM-400/annotations_filtered_250226_final_backup.csv",
+                        help="Path to annotation CSV (input for --cut_clips, or output for --generate_clip_annotations)")
+
+    # generate_clip_annotations specific
+    parser.add_argument("--label_csv", type=str, default="dataset/PM-400/merged_pmv400.csv",
+                        help="Path to label mapping CSV (for --generate_clip_annotations)")
+    parser.add_argument("--out_annotation_csv", type=str, default="dataset/AVE-PM/annotations.csv",
+                        help="Output annotation CSV path (for --generate_clip_annotations)")
+
+    # cut_clips specific
+    parser.add_argument("--out_videos_dir", type=str, default="dataset/AVE-PM/videos",
+                        help="Directory to save cut clips (for --cut_clips)")
+
+    args = parser.parse_args()
+
     if args.generate_clip_annotations:
-        generate_clip_annotations()
+        generate_clip_annotations(args)
     if args.cut_clips:
-        cut_clips()
+        cut_clips(args)

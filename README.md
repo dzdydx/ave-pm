@@ -16,8 +16,6 @@
 
 ## 📦 Installation
 
-1. **Clone the repository**
-
 ```bash
 git clone git@github.com:dzdydx/ave-pm.git
 cd ave-pm-main
@@ -28,9 +26,46 @@ conda activate AVE-PM
 
 ## 📁 Dataset
 
-You can download AVE-PM dataset from [Baidu Cloud Link](https://pan.baidu.com/s/1ErDp1zVEe0mugVMmQFbqow?pwd=2979). And then unzip the video files into the `dataset/data/videos/` folder.
+The AVE-PM dataset is built upon the [Portrait-Mode 400 (PM-400)](https://github.com/bytedance/Portrait-Mode-Video) dataset, with videos sourced from the Douyin platform. Directly distributing the raw videos videos may violate Douyin's terms of use, so we provide download scripts and video IDs following the same approach as PM-400.
 
-### ⚙️ Data Preparation
+### ⚙️ Prepare Data
+
+**Step 1: Download PM-400 videos from source**
+
+There are two options to download the original PM-400 videos:
+1. (Recommended) Follow the instructions below. Click-to-run scripts are provided. Only necessary videos (~20% of the whole dataset) are downloaded here.
+2. Alternatively, a community-uploaded cache of PM-400 dataset can be accessed [here](https://github.com/bytedance/Portrait-Mode-Video/issues/7).
+
+Either way, please place the downloaded videos at `dataset/PM-400/videos` to proceed to following steps without modifying default paths.
+
+We provide video links in `dataset/PM-400/video_links-filtered.csv`. Use the provided script to download the videos:
+
+```bash
+python scripts_helper/download_videos.py \
+    --video_links dataset/video_links-filterd.csv \
+    --output_dir dataset/PM-400/videos/
+```
+
+Failed downloads will be logged in `dataset/PM-400/fail_cases.csv` for retry attempts.
+
+> [!NOTE] 
+> Network issues may happen when downloading original PM-400 videos. Thanks to the community, a cached version of AVE-PM is provided. Check [the issue here](https://github.com/dzdydx/ave-pm/issues/1) to download the processed clips of AVE-PM. You can skip step 2 if you choose this way.
+
+**Step 2: Prepare AVE-PM clips**
+
+Cut 10-second video clips from the original PM-400 videos using the provided annotations. Each clip is named by its `sample_id`:
+
+```bash
+python scripts_helper/cut_video_files.py --cut_clips \
+    --videos_dir dataset/PM-400/videos \
+    --annotation_csv dataset/PM-400/annotations_filtered_250226_final_backup.csv \
+    --out_videos_dir dataset/AVE-PM/videos
+```
+
+This reads the per-clip annotations (start/end times, onset/offset) and cuts the corresponding segments from the source videos. The script resumes automatically if interrupted.
+
+**Step 3: Extract features and preprocess**
+
 Prior to training and evaluation, you'll need to preprocess the data by extracting audio and visual features.
 
 🔉 **Feature Extraction**
@@ -62,13 +97,13 @@ Customize the parameters in the `.sh` files as needed. Alternative feature extra
 For LAVISH model training, extract video frames and raw audio into respective directories:
 
 ```python
-python /LAVISH/scripts/extract_frames.py --out_dir /dataset/data/video_frames/ --video_dir dataset/data/videos/
-python /LAVISH/scripts/extract_audio.py --video_pth dataset/data/videos/ --save_pth dataset/data/raw_audios
+python LAVISH/scripts/extract_frames.py --out_dir dataset/AVE-PM/video_frames/ --video_dir dataset/AVE-PM/videos/
+python LAVISH/scripts/extract_audio.py --video_pth dataset/AVE-PM/videos/ --save_pth dataset/AVE-PM/raw_audios
 ```
 
 Output locations:
-- Frames → `/dataset/data/video_frames/`
-- Audios → `/dataset/data/raw_audios/`
+- Frames → `dataset/AVE-PM/video_frames/`
+- Audios → `dataset/AVE-PM/raw_audios/`
   
 
 ### ⚙️ Cross-mode evaluation
