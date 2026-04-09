@@ -18,7 +18,7 @@
 
 ```bash
 git clone git@github.com:dzdydx/ave-pm.git
-cd ave-pm-main
+cd ave-pm
 
 conda env create -f environment.yaml
 conda activate AVE-PM
@@ -26,7 +26,7 @@ conda activate AVE-PM
 
 ## 📁 Dataset
 
-The AVE-PM dataset is built upon the [Portrait-Mode 400 (PM-400)](https://github.com/bytedance/Portrait-Mode-Video) dataset, with videos sourced from the Douyin platform. Directly distributing the raw videos videos may violate Douyin's terms of use, so we provide download scripts and video IDs following the same approach as PM-400.
+The AVE-PM dataset is built upon the [Portrait-Mode 400 (PM-400)](https://github.com/bytedance/Portrait-Mode-Video) dataset, with videos sourced from the Douyin platform. Directly distributing the raw videos may violate Douyin's terms of use, so we provide download scripts and video IDs following the same approach as PM-400.
 
 ### ⚙️ Prepare Data
 
@@ -38,11 +38,11 @@ There are two options to download the original PM-400 videos:
 
 Either way, please place the downloaded videos at `dataset/PM-400/videos` to proceed to following steps without modifying default paths.
 
-We provide video links in `dataset/PM-400/video_links-filtered.csv`. Use the provided script to download the videos:
+We provide video links in `dataset/PM-400/video_links_filtered.csv`. Use the provided script to download the videos:
 
 ```bash
 python scripts_helper/download_videos.py \
-    --video_links dataset/video_links-filterd.csv \
+    --video_links dataset/PM-400/video_links_filtered.csv \
     --output_dir dataset/PM-400/videos/
 ```
 
@@ -58,7 +58,7 @@ Cut 10-second video clips from the original PM-400 videos using the provided ann
 ```bash
 python scripts_helper/cut_video_files.py --cut_clips \
     --videos_dir dataset/PM-400/videos \
-    --annotation_csv dataset/PM-400/annotations_filtered_250226_final_backup.csv \
+    --annotation_csv dataset/PM-400/PM400-to-AVEPM.csv \
     --out_videos_dir dataset/AVE-PM/videos
 ```
 
@@ -126,39 +126,13 @@ This creates:
 Extract AVE dataset frames and audio:
 
 ```python
-python /LAVISH/scripts/extract_frames.py --out_dir dataset/data/AVE/video_frames --video_dir dataset/data/AVE/videos/
-python /LAVISH/scripts/extract_audio.py --video_pth dataset/data/AVE/videos/ --save_pth dataset/data/AVE/raw_audios
+python LAVISH/scripts/extract_frames.py --out_dir dataset/data/AVE/video_frames --video_dir dataset/data/AVE/videos/
+python LAVISH/scripts/extract_audio.py --video_pth dataset/data/AVE/videos/ --save_pth dataset/data/AVE/raw_audios
 ```
 
 Output locations:
-- AVE Frames → `/dataset/data/AVE/video_frames/`
-- AVE Audios → `/dataset/data/AVE/raw_audios/`
-
-### 📂 Directory Structure
-
-```graphql
-AVE-PM/
-├── dataset/
-|	├── csvfiles/			   # csv files for training,validating and testing
-|	|   ├── select/			  # csv files for S-LM and S-PM subsets
-|	|   |  ├── ave/
-|   |   |  └── avepm/
-|   |	├── AVE/
-|   |	|	├── data/          # AVE dataset csv files
-|   |	|	├── feature/
-|   |	|	├── raw_audios/
-|   |	|	├── video_frames/
-|   |	|	└── videos/        # AVE dataset videos
-│   │   ├── videos/            # Raw portrait-mode videos
-│   │   ├── video_frames/      # Extracted RGB frames (generated)
-|	|	├── processed_audios/  # Preprocessed audio segments(generated)
-│   │   └── raw_audios/        # Extracted audio segments (generated)
-│   └── feature/			   # Precomputed audio and visual features
-|       ├── features/  
-|       ├── select/       # Precomputed features for S-LM and S-PM subsets
-│       ├── preprocess_audio_feature/   
-|       └── preprocess_visual_feature/
-```
+- AVE Frames → `dataset/data/AVE/video_frames/`
+- AVE Audios → `dataset/data/AVE/raw_audios/`
 
 ## 🚀 Training & Evaluation
 
