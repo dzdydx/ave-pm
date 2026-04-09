@@ -41,7 +41,6 @@ venv.bak/
 .DS_Store
 
 # Data files
-*.csv
 *.dat
 *.out
 *.pid
@@ -118,5 +117,4 @@ dmypy.json
 # Cython debug symbols
 cython_debug/
 
-test.py
 *.ipynb
